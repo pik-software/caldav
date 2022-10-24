@@ -767,7 +767,8 @@ class RepeatedFunctionalTestsBaseClass(object):
         events = c.events()
         assert len(events) == len(existing_events) + 2
 
-    def testCreateAlarm(self):
+    def testAlarm(self):
+        ## Ref https://github.com/python-caldav/caldav/issues/132
         c = self._fixCalendar()
         ev = c.save_event(
             dtstart=datetime(2015, 10, 10, 8, 7, 6),
@@ -776,7 +777,28 @@ class RepeatedFunctionalTestsBaseClass(object):
             alarm_trigger=timedelta(minutes=-15),
             alarm_action="AUDIO",
         )
-        pass
+
+        ## Search for the alarm (procrastinated - see https://github.com/python-caldav/caldav/issues/132)
+        assert (
+            len(
+                c.search(
+                    event=True,
+                    alarm_start=datetime(2015, 10, 10, 8, 1),
+                    alarm_end=datetime(2015, 10, 10, 8, 7),
+                )
+            )
+            == 0
+        )
+        assert (
+            len(
+                c.search(
+                    event=True,
+                    alarm_start=datetime(2015, 10, 10, 7, 44),
+                    alarm_end=datetime(2015, 10, 10, 8, 7),
+                )
+            )
+            == 1
+        )
 
     def testCalendarByFullURL(self):
         """

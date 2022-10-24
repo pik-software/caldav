@@ -1107,6 +1107,8 @@ class Calendar(DAVObject):
         expand=None,
         start=None,
         end=None,
+        alarm_start=None,
+        alarm_end=None,
         **kwargs
     ):
         """This method will produce a caldav search query as an etree object.
@@ -1164,6 +1166,11 @@ class Calendar(DAVObject):
 
         if start or end:
             filters.append(cdav.TimeRange(start, end))
+
+        if alarm_start or alarm_end:
+            filters.append(
+                cdav.CompFilter("VALARM") + cdav.TimeRange(alarm_start, alarm_end)
+            )
 
         if todo is not None:
             if not todo:
