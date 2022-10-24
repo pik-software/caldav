@@ -81,8 +81,12 @@ def fix(event):
 
 ## sorry for being english-language-euro-centric ... fits rather perfectly as default language for me :-)
 def create_ical(ical_fragment=None, objtype=None, language="en_DK", **props):
-    """
-    I somehow feel this fits more into the icalendar library than here
+    """Creates some icalendar based on properties given as parameters.
+    It basically creates an icalendar object with all the boilerplate,
+    some sensible defaults, the properties given and returns it as a
+    string.
+
+    TODO: timezones not supported so far
     """
     ical_fragment = to_normal_str(ical_fragment)
     if not ical_fragment or not re.search("^BEGIN:V", ical_fragment, re.MULTILINE):
@@ -105,6 +109,7 @@ def create_ical(ical_fragment=None, objtype=None, language="en_DK", **props):
         my_instance = icalendar.Calendar.from_ical(ical_fragment)
         component = my_instance.subcomponents[0]
         ical_fragment = None
+    alarm = {}
     for prop in props:
         if props[prop] is not None:
             if prop in ("child", "parent"):
@@ -112,11 +117,23 @@ def create_ical(ical_fragment=None, objtype=None, language="en_DK", **props):
                     component.add(
                         "related-to", props[prop], parameters={"rel-type": prop.upper()}
                     )
+            elif prop.startswith("alarm_"):
+                alarm[prop[6:]] = props[prop]
             else:
                 component.add(prop, props[prop])
+    if alarm:
+        add_alarm(my_instance, alarm)
     ret = to_normal_str(my_instance.to_ical())
     if ical_fragment and ical_fragment.strip():
         ret = re.sub(
             "^END:V", ical_fragment.strip() + "\nEND:V", ret, flags=re.MULTILINE
         )
     return ret
+
+
+def add_alarm(ical, alarm):
+    ia = icalendar.Alarm()
+    for prop in alarm:
+        ia.add(prop, alarm[prop])
+    ical.subcomponents[0].add_component(ia)
+    return ical

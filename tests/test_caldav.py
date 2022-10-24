@@ -17,6 +17,7 @@ import uuid
 from collections import namedtuple
 from datetime import date
 from datetime import datetime
+from datetime import timedelta
 
 import pytest
 import requests
@@ -765,6 +766,17 @@ class RepeatedFunctionalTestsBaseClass(object):
         )
         events = c.events()
         assert len(events) == len(existing_events) + 2
+
+    def testCreateAlarm(self):
+        c = self._fixCalendar()
+        ev = c.save_event(
+            dtstart=datetime(2015, 10, 10, 8, 7, 6),
+            summary="This is a test event",
+            dtend=datetime(2016, 10, 10, 9, 8, 7),
+            alarm_trigger=timedelta(minutes=-15),
+            alarm_action="AUDIO",
+        )
+        pass
 
     def testCalendarByFullURL(self):
         """
