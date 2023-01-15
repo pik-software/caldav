@@ -187,7 +187,10 @@ class DAVObject(object):
         if root:
             if hasattr(root, "xmlelement"):
                 body = etree.tostring(
-                    root.xmlelement(), encoding="utf-8", xml_declaration=True
+                    root.xmlelement(),
+                    encoding="utf-8",
+                    xml_declaration=True,
+                    pretty_print=error.debug_dump_communication,
                 )
             else:
                 body = root
