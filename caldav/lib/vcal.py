@@ -130,11 +130,13 @@ def create_ical(ical_fragment=None, objtype=None, language="en_DK", **props):
         component.add("dtstamp", datetime.datetime.now(tz=datetime.timezone.utc))
         component.add("uid", uuid.uuid1())
         my_instance.add_component(component)
+        ## STATUS should default to NEEDS-ACTION for tasks, if it's not set
+        ## (otherwise we cannot easily add a task to a davical calendar and
+        ## then find it again - ref https://gitlab.com/davical-project/davical/-/issues/281
+        if not props.get('STATUS') and not '\nSTATUS:' in ical_fragment and objtype == 'VTODO':
+        props['STATUS'] = 'NEEDS-ACTION'
+
     else:
-        if objtype is None:
-            for comptype in ('VEVENT', 'VTODO', 'VJOURNAL'):
-                if ('BEGIN:' + comptype) in ical_fragment:
-                    objtyp = comptype
         if not ical_fragment.startswith("BEGIN:VCALENDAR"):
             ical_fragment = (
                 "BEGIN:VCALENDAR\n"
@@ -144,12 +146,6 @@ def create_ical(ical_fragment=None, objtype=None, language="en_DK", **props):
         my_instance = icalendar.Calendar.from_ical(ical_fragment)
         component = my_instance.subcomponents[0]
         ical_fragment = None
-
-    ## STATUS should default to NEEDS-ACTION for tasks, if it's not set
-    ## (otherwise we cannot easily add a task to a davical calendar and
-    ## then find it again - ref https://gitlab.com/davical-project/davical/-/issues/281
-    if not props.get('STATUS') and not '\nSTATUS:' in ical_fragment and objtype == 'VTODO':
-        props['STATUS'] = 'NEEDS-ACTION'
 
     for prop in props:
         if props[prop] is not None:
