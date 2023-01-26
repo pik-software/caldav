@@ -141,7 +141,7 @@ def create_ical(ical_fragment=None, objtype=None, language="en_DK", **props):
             props["STATUS"] = "NEEDS-ACTION"
 
     else:
-        if not ical_fragment.startswith("BEGIN:VCALENDAR"):
+        if not ical_fragment.strip().startswith("BEGIN:VCALENDAR"):
             ical_fragment = (
                 "BEGIN:VCALENDAR\n"
                 + to_normal_str(ical_fragment.strip())
