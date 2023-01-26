@@ -1473,7 +1473,8 @@ class RepeatedFunctionalTestsBaseClass(object):
         def uids(lst):
             return [x.instance.vtodo.uid for x in lst]
 
-        assert uids(todos) == uids([t2, t3, t1])
+        ## Default sort order is (due, priority).
+        assert uids(todos) == uids([t2, t1, t4])
 
         todos = c.todos(sort_keys=("priority",))
         ## sort_key is considered to be a legacy parameter,
@@ -1487,8 +1488,8 @@ class RepeatedFunctionalTestsBaseClass(object):
                 if hasattr(x.instance.vtodo, "priority")
             ]
 
-        assert pri(todos) == pri([t3, t2])
-        assert pri(todos2) == pri([t3, t2])
+        assert pri(todos) == pri([t4, t2])
+        assert pri(todos2) == pri([t4, t2])
 
         todos = c.todos(
             sort_keys=(
@@ -1496,7 +1497,7 @@ class RepeatedFunctionalTestsBaseClass(object):
                 "priority",
             )
         )
-        assert uids(todos) == uids([t3, t2, t1])
+        assert uids(todos) == uids([t4, t2, t1])
 
         ## str of CalendarObjectResource is slightly inconsistent compared to
         ## the str of Calendar objects, as the class name is included.  Perhaps
@@ -1524,7 +1525,10 @@ class RepeatedFunctionalTestsBaseClass(object):
         t5 = c.save_todo(todo5)
         t6 = c.save_todo(todo6)
         todos = c.todos()
-        assert len(todos) == 6
+        if self.check_compatibility_flag('isnotdefined_not_working'):
+            assert len(todos) == 3
+        else:
+            assert len(todos) == 6
 
         notodos = c.date_search(  # default compfilter is events
             start=datetime(1997, 4, 14), end=datetime(2015, 5, 14), expand=False
@@ -1645,7 +1649,7 @@ class RepeatedFunctionalTestsBaseClass(object):
         # add todo-items
         t1 = c.save_todo(todo)
         t2 = c.save_todo(todo2)
-        t3 = c.save_todo(todo3)
+        t3 = c.save_todo(todo3, status='NEEDS-ACTION')
 
         # There are now three todo-items at the calendar
         todos = c.todos()
