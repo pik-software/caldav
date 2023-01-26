@@ -263,6 +263,7 @@ BEGIN:VTODO
 DTSTAMP:19980101T130000Z
 DTSTART:19980415T133000Z
 DUE:19980516T045959Z
+STATUS:NEEDS-ACTION
 SUMMARY:Get stuck with Netfix and forget about the tax income declaration
 CLASS:CONFIDENTIAL
 CATEGORIES:FAMILY
@@ -1464,7 +1465,7 @@ class RepeatedFunctionalTestsBaseClass(object):
         # add todo-item
         t1 = c.save_todo(todo)
         t2 = c.save_todo(todo2)
-        t3 = c.save_todo(todo3)
+        t4 = c.save_todo(todo4)
 
         todos = c.todos()
         assert len(todos) == 3
