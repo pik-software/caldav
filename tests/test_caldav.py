@@ -1195,7 +1195,7 @@ class RepeatedFunctionalTestsBaseClass(object):
             ) and not self.check_compatibility_flag("text_search_not_working"):
                 assert len(some_events) == 1
 
-            ## I expect logical and when combining category with a date range
+            ## I expect "logical and" when combining category with a date range
             no_events = c.search(
                 comp_class=Event,
                 category="PERSONAL",
@@ -1207,7 +1207,12 @@ class RepeatedFunctionalTestsBaseClass(object):
                 and not self.check_compatibility_flag("combined_search_not_working")
                 and not self.check_compatibility_flag("text_search_not_working")
             ):
-                assert len(no_events) == 0
+                if self.check_compatibility_flag('fastmail_buggy_noexpand_date_search'):
+                    ## fastmail and davical delivers too many recurring events on a date search
+                    ## (but fastmail anyway won't get here, as combined search is not working with fastmail)
+                    assert len(no_events) == 1
+                else:
+                    assert len(no_events) == 1
             some_events = c.search(
                 comp_class=Event,
                 category="PERSONAL",
@@ -1223,12 +1228,14 @@ class RepeatedFunctionalTestsBaseClass(object):
 
         some_events = c.search(comp_class=Event, summary="Bastille Day Party")
         if not self.check_compatibility_flag("text_search_not_working"):
-            if self.check_compatibility_flag("text_search_is_exact_match_sometimes"):
-                assert len(some_events) in (1, 2)
-            elif self.check_compatibility_flag("text_search_is_exact_match_only"):
-                assert len(some_events) == 1
-            else:
-                assert len(some_events) == 2
+            assert len(some_events) == 1
+        some_events = c.search(comp_class=Event, summary="Bastille Day")
+        if self.check_compatibility_flag("text_search_is_exact_match_sometimes"):
+            assert len(some_events) in (0, 2)
+        elif self.check_compatibility_flag("text_search_is_exact_match_only"):
+            assert len(some_events) == 0
+        else:
+            assert len(some_events) == 2
 
         ## Even sorting should work out
         all_events = c.search(sort_keys=("summary", "dtstamp"))
@@ -1255,9 +1262,15 @@ class RepeatedFunctionalTestsBaseClass(object):
         all_todos = c.search(comp_class=Event)
         assert len(all_todos) == 0
 
-        ## Search with todo flag set should yield all 6 events
+        ## Search with todo flag set should yield all 6 tasks
+        ## (Except, if the calendar server does not support is-not-defined very
+        ## well, perhaps only 3 will be returned - see
+        ## https://gitlab.com/davical-project/davical/-/issues/281 )
         all_todos = c.search(todo=True)
-        assert len(all_todos) == 6
+        if self.check_compatibility_flag('isnotdefined_not_working'):
+            assert len(all_todos) == 3
+        else:
+            assert len(all_todos) == 6
 
         ## Search for misc text fields
         ## UID is a special case, supported by almost all servers
@@ -1291,28 +1304,27 @@ class RepeatedFunctionalTestsBaseClass(object):
         ## This is not a very useful search, and it's sort of a client side bug that we allow it at all.
         ## It will not match if categories field is set to "PERSONAL,ANNIVERSARY,SPECIAL OCCATION"
         ## It may not match since the above is to be considered equivalent to the raw data entered.
-        some_todos = c.search(comp_class=Event, category="FAMILY,FINANCE")
+        some_todos = c.search(comp_class=Todo, category="FAMILY,FINANCE")
         if not self.check_compatibility_flag("text_search_not_working"):
-            assert len(some_todos) in (0, 1)
-        ## TODO: This is actually a bug. We need to do client side filtering
+            assert len(some_todos) in (0, 6)
+        ## TODO: We should consider to do client side filtering to ensure exact
+        ## match only on components having MIL as a category (and not FAMILY)
         some_todos = c.search(comp_class=Todo, category="MIL")
         if self.check_compatibility_flag("text_search_is_exact_match_sometimes"):
             assert len(some_todos) in (0, 6)
         elif self.check_compatibility_flag("text_search_is_exact_match_only"):
             assert len(some_todos) == 0
-        elif not self.check_compatibility_flag(
-            "category_search_yields_nothing"
-        ) and not self.check_compatibility_flag("text_search_not_working"):
-            assert len(some_todos) == 1
+        elif not self.check_compatibility_flag("category_search_yields_nothing") and not self.check_compatibility_flag("text_search_not_working"):
+            ## This is the correct thing, according to the letter of the RFC
+            assert len(some_todos) == 6
 
-        ## completing an event, and it should not show up anymore
-        t1.complete()
-        t2.complete()
+        ## completing events, and it should not show up anymore
         t3.complete()
-        t4.complete()
+        t5.complete()
+        t6.complete()
 
         some_todos = c.search(todo=True)
-        assert len(some_todos) == 2
+        assert len(some_todos) == 3
 
         ## unless we specifically ask for completed tasks
         all_todos = c.search(todo=True, include_completed=True)
