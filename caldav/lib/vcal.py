@@ -135,7 +135,7 @@ def create_ical(ical_fragment=None, objtype=None, language="en_DK", **props):
         ## then find it again - ref https://gitlab.com/davical-project/davical/-/issues/281
         if (
             not props.get("STATUS")
-            and not "\nSTATUS:" in ical_fragment
+            and not "\nSTATUS:" in (ical_fragment or "")
             and objtype == "VTODO"
         ):
             props["STATUS"] = "NEEDS-ACTION"
