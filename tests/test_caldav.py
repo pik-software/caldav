@@ -1687,9 +1687,9 @@ class RepeatedFunctionalTestsBaseClass(object):
     def testTodoRecurringCompleteSafe(self):
         self.skip_on_compatibility_flag("read_only")
         c = self._fixCalendar(supported_calendar_component_set=["VTODO"])
-        t6 = c.save_todo(todo6)
+        t6 = c.save_todo(todo6, status='NEEDS-ACTION')
         if not self.check_compatibility_flag("rrule_takes_no_count"):
-            t8 = c.save_todo(todo8)
+            t8 = c.save_todo(todo8, status='NEEDS-ACTION')
         if not self.check_compatibility_flag("rrule_takes_no_count"):
             assert len(c.todos()) == 2
         else:
@@ -1710,9 +1710,9 @@ class RepeatedFunctionalTestsBaseClass(object):
     def testTodoRecurringCompleteThisandfuture(self):
         self.skip_on_compatibility_flag("read_only")
         c = self._fixCalendar(supported_calendar_component_set=["VTODO"])
-        t6 = c.save_todo(todo6)
+        t6 = c.save_todo(todo6, status='NEEDS-ACTION')
         if not self.check_compatibility_flag("rrule_takes_no_count"):
-            t8 = c.save_todo(todo8)
+            t8 = c.save_todo(todo8, status='NEEDS-ACTION')
         if not self.check_compatibility_flag("rrule_takes_no_count"):
             assert len(c.todos()) == 2
         else:
