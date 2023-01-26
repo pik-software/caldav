@@ -1465,7 +1465,7 @@ class RepeatedFunctionalTestsBaseClass(object):
         # add todo-item
         t1 = c.save_todo(todo)
         t2 = c.save_todo(todo2)
-        t3 = c.save_todo(todo3)
+        t4 = c.save_todo(todo4)
 
         todos = c.todos()
         assert len(todos) == 3
