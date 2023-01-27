@@ -1208,7 +1208,7 @@ class RepeatedFunctionalTestsBaseClass(object):
                 and not self.check_compatibility_flag("combined_search_not_working")
                 and not self.check_compatibility_flag("text_search_not_working")
             ):
-                if self.check_compatibility_flag('fastmail_buggy_noexpand_date_search'):
+                if self.check_compatibility_flag("fastmail_buggy_noexpand_date_search"):
                     ## fastmail and davical delivers too many recurring events on a date search
                     ## (but fastmail anyway won't get here, as combined search is not working with fastmail)
                     assert len(no_events) == 1
@@ -1268,7 +1268,7 @@ class RepeatedFunctionalTestsBaseClass(object):
         ## well, perhaps only 3 will be returned - see
         ## https://gitlab.com/davical-project/davical/-/issues/281 )
         all_todos = c.search(todo=True)
-        if self.check_compatibility_flag('isnotdefined_not_working'):
+        if self.check_compatibility_flag("isnotdefined_not_working"):
             assert len(all_todos) == 3
         else:
             assert len(all_todos) == 6
@@ -1315,7 +1315,9 @@ class RepeatedFunctionalTestsBaseClass(object):
             assert len(some_todos) in (0, 6)
         elif self.check_compatibility_flag("text_search_is_exact_match_only"):
             assert len(some_todos) == 0
-        elif not self.check_compatibility_flag("category_search_yields_nothing") and not self.check_compatibility_flag("text_search_not_working"):
+        elif not self.check_compatibility_flag(
+            "category_search_yields_nothing"
+        ) and not self.check_compatibility_flag("text_search_not_working"):
             ## This is the correct thing, according to the letter of the RFC
             assert len(some_todos) == 6
 
@@ -1525,7 +1527,7 @@ class RepeatedFunctionalTestsBaseClass(object):
         t5 = c.save_todo(todo5)
         t6 = c.save_todo(todo6)
         todos = c.todos()
-        if self.check_compatibility_flag('isnotdefined_not_working'):
+        if self.check_compatibility_flag("isnotdefined_not_working"):
             assert len(todos) == 3
         else:
             assert len(todos) == 6
@@ -1649,7 +1651,7 @@ class RepeatedFunctionalTestsBaseClass(object):
         # add todo-items
         t1 = c.save_todo(todo)
         t2 = c.save_todo(todo2)
-        t3 = c.save_todo(todo3, status='NEEDS-ACTION')
+        t3 = c.save_todo(todo3, status="NEEDS-ACTION")
 
         # There are now three todo-items at the calendar
         todos = c.todos()
@@ -1687,9 +1689,9 @@ class RepeatedFunctionalTestsBaseClass(object):
     def testTodoRecurringCompleteSafe(self):
         self.skip_on_compatibility_flag("read_only")
         c = self._fixCalendar(supported_calendar_component_set=["VTODO"])
-        t6 = c.save_todo(todo6, status='NEEDS-ACTION')
+        t6 = c.save_todo(todo6, status="NEEDS-ACTION")
         if not self.check_compatibility_flag("rrule_takes_no_count"):
-            t8 = c.save_todo(todo8, status='NEEDS-ACTION')
+            t8 = c.save_todo(todo8, status="NEEDS-ACTION")
         if not self.check_compatibility_flag("rrule_takes_no_count"):
             assert len(c.todos()) == 2
         else:
@@ -1710,9 +1712,9 @@ class RepeatedFunctionalTestsBaseClass(object):
     def testTodoRecurringCompleteThisandfuture(self):
         self.skip_on_compatibility_flag("read_only")
         c = self._fixCalendar(supported_calendar_component_set=["VTODO"])
-        t6 = c.save_todo(todo6, status='NEEDS-ACTION')
+        t6 = c.save_todo(todo6, status="NEEDS-ACTION")
         if not self.check_compatibility_flag("rrule_takes_no_count"):
-            t8 = c.save_todo(todo8, status='NEEDS-ACTION')
+            t8 = c.save_todo(todo8, status="NEEDS-ACTION")
         if not self.check_compatibility_flag("rrule_takes_no_count"):
             assert len(c.todos()) == 2
         else:
