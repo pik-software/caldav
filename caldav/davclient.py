@@ -691,7 +691,7 @@ class DAVClient:
                 )
                 commlog.write(b"\n\n")
                 ct = response.headers.get("Content-Type", "")
-                if response.tree:
+                if response.tree is not None:
                     commlog.write(
                         to_wire(etree.tostring(response.tree, pretty_print=True))
                     )
