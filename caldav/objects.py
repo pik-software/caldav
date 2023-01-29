@@ -2726,7 +2726,7 @@ class Todo(CalendarObjectResource):
         please put caldav<2.0 in the requirements.
 
         """
-        if not due.tzinfo:
+        if hasattr(due, 'tzinfo') and not due.tzinfo:
             due = due.astimezone(timezone.utc)
         i = self.icalendar_component
         if check_parent:
