@@ -494,12 +494,15 @@ class Principal(DAVObject):
             supported_calendar_component_set=supported_calendar_component_set,
         )
 
-    def calendar(self, name=None, cal_id=None):
+    def calendar(self, name=None, cal_id=None, cal_url=None):
         """
         The calendar method will return a calendar object.
         It will not initiate any communication with the server.
         """
-        return self.calendar_home_set.calendar(name, cal_id)
+        if not cal_url:
+            return self.calendar_home_set.calendar(name, cal_id)
+        else:
+            return Calendar(self.client, url=self.client.url.join(cal_url))
 
     def get_vcal_address(self):
         """
@@ -1808,7 +1811,7 @@ class CalendarObjectResource(DAVObject):
 
         self.save()
 
-    def _get_icalendar_component(self, assert_one=True):
+    def _get_icalendar_component(self, assert_one=False):
         """Returns the icalendar subcomponent - which should be an
         Event, Journal, Todo or FreeBusy from the icalendar class
 
@@ -1846,7 +1849,7 @@ class CalendarObjectResource(DAVObject):
     icalendar_component = property(
         _get_icalendar_component,
         _set_icalendar_component,
-        doc="icalendar component - cannot be used with recurrence sets",
+        doc="icalendar component - should not be used with recurrence sets",
     )
 
     def add_attendee(self, attendee, no_default_parameters=False, **parameters):
@@ -2620,7 +2623,7 @@ class Todo(CalendarObjectResource):
             * safe - see doc for _complete_recurring_safe for details
         """
         if not completion_timestamp:
-            completion_timestamp = datetime.utcnow().astimezone(vobject.icalendar.utc)
+            completion_timestamp = datetime.utcnow().astimezone(timezone.utc)
 
         if hasattr(self.instance.vtodo, "rrule") and handle_rrule:
             return getattr(self, "_complete_recurring_%s" % rrule_mode)(
@@ -2712,16 +2715,41 @@ class Todo(CalendarObjectResource):
         else:
             return None
 
-    def set_due(self, due, move_dtstart=False):
+    def set_due(self, due, move_dtstart=False, check_parent=False):
         """The RFC specifies that a VTODO cannot have both due and
         duration, so when setting due, the duration field must be
         evicted
 
-        WARNING: this method is likely to be deprecated and moved to
-        the icalendar library.  If you decide to use it, please put
-        caldav<2.0 in the requirements.
+        check_parent=True will raise some error if there exists a
+        parent calendar component (through RELATED-TO), and the parents
+        due or dtend is before the new dtend).
+
+        WARNING: this method is likely to be deprecated and parts of
+        it moved to the icalendar library.  If you decide to use it,
+        please put caldav<2.0 in the requirements.
+
         """
+        if hasattr(due, 'tzinfo') and not due.tzinfo:
+            due = due.astimezone(timezone.utc)
         i = self.icalendar_component
+        if check_parent:
+            rels = i.get("RELATED-TO")
+            if rels is None:
+                rels = []
+            if not isinstance(rels, list):
+                rels = [rels]
+            for rel in rels:
+                if rel.params["RELTYPE"] == "PARENT":
+                    parent = self.parent.object_by_uid(rel)
+                    pend = parent.icalendar_component.get("DTEND")
+                    if pend:
+                        pend = pend.dt
+                    else:
+                        pend = parent.get_due()
+                    if pend and pend < due:
+                        raise error.ConsistencyError(
+                            "parent object has due/end %s, cannot procrastinate child object without first procrastinating parent object"
+                        )
         duration = self.get_duration()
         i.pop("DURATION", None)
         i.pop("DUE", None)
