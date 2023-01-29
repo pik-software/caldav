@@ -282,6 +282,7 @@ BEGIN:VTODO
 UID:takeoutthethrash
 DTSTAMP:20221013T151313Z
 DTSTART:20221017T065500Z
+STATUS:NEEDS-ACTION
 DURATION:PT10M
 SUMMARY:Take out the thrash before the collectors come.
 RRULE:FREQ=WEEKLY;BYDAY=MO;BYHOUR=6;BYMINUTE=55;COUNT=3
@@ -1165,6 +1166,22 @@ class RepeatedFunctionalTestsBaseClass(object):
         if not self.check_compatibility_flag("text_search_not_working"):
             assert len(some_events) == 1
 
+        ## not defined
+        some_events = c.search(comp_class=Event, no_class=True)
+        ## ev1, ev3 should be returned
+        if not self.check_compatibility_flag("isnotdefined_not_working"):
+            assert(len(some_events) == 2)
+            
+        some_events = c.search(comp_class=Event, no_category=True)
+        ## ev1, ev3 should be returned
+        if not self.check_compatibility_flag("isnotdefined_not_working"):
+            assert(len(some_events) == 2)
+
+        some_events = c.search(comp_class=Event, no_dtend=True)
+        ## evr should be returned
+        if not self.check_compatibility_flag("isnotdefined_not_working"):
+            assert(len(some_events) == 1)
+
         ## category
         if not self.check_compatibility_flag("radicale_breaks_on_category_search"):
 
@@ -1192,6 +1209,8 @@ class RepeatedFunctionalTestsBaseClass(object):
                 assert len(some_events) in (0, 1)
             ## TODO: This is actually a bug. We need to do client side filtering
             some_events = c.search(comp_class=Event, category="PERSON")
+            if self.check_compatibility_flag("text_search_is_exact_match_sometimes"):
+                assert len(some_events) in (0,1)
             if self.check_compatibility_flag("text_search_is_exact_match_only"):
                 assert len(some_events) == 0
             elif not self.check_compatibility_flag(
