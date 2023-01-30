@@ -2743,7 +2743,7 @@ class Todo(CalendarObjectResource):
                         pend = pend.dt
                     else:
                         pend = parent.get_due()
-                    if pend and pend < due:
+                    if pend and pend.astimezone(timezone.utc) < due:
                         raise error.ConsistencyError(
                             "parent object has due/end %s, cannot procrastinate child object without first procrastinating parent object"
                         )
