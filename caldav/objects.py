@@ -2740,7 +2740,7 @@ class Todo(CalendarObjectResource):
             if not isinstance(rels, list):
                 rels = [rels]
             for rel in rels:
-                if rel.params["RELTYPE"] == "PARENT":
+                if rel.params.get("RELTYPE") == "PARENT":
                     parent = self.parent.object_by_uid(rel)
                     pend = parent.icalendar_component.get("DTEND")
                     if pend:
