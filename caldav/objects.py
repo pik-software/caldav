@@ -1818,6 +1818,8 @@ class CalendarObjectResource(DAVObject):
 
         See also https://github.com/python-caldav/caldav/issues/232
         """
+        if not self.is_loaded():
+            self.load()
         ret = [
             x
             for x in self.icalendar_instance.subcomponents
@@ -2187,6 +2189,9 @@ class CalendarObjectResource(DAVObject):
 
         self._create(id=self.id, path=path)
         return self
+
+    def is_loaded(self):
+        return self._data or self._vobject_instance or self._icalendar_instance
 
     def __str__(self):
         return "%s: %s" % (self.__class__.__name__, self.url)
