@@ -1,6 +1,7 @@
 import sys
 from datetime import date
 from datetime import datetime
+from datetime import timedelta
 
 ## We'll try to use the local caldav library, not the system-installed
 sys.path.insert(0, "..")
@@ -99,9 +100,13 @@ def calendar_by_url_demo(client, url):
 
 
 def read_modify_event_demo(event):
-    """
-    This demonstrates how to edit properties in the ical object and
-    save it back to the calendar
+    """This demonstrates how to edit properties in the ical object
+    and save it back to the calendar.  It takes an event -
+    caldav.Event - as input.  This event is found through the
+    `search_calendar_demo`.  The event needs some editing, which will
+    be done below.  Keep in mind that the differences between an
+    Event, a Todo and a Journal is small, everything that is done to
+    he event here could as well be done towards a task.
     """
     ## The objects (events, journals and tasks) comes with some properties that
     ## can be used for inspecting the data and modifying it.
@@ -135,6 +140,21 @@ def read_modify_event_demo(event):
         "celebratiuns", "celebrations"
     )
 
+    ## timestamps (DTSTAMP, DTSTART, DTEND for events, DUE for tasks,
+    ## etc) can be fetched using the icalendar library like this:
+    dtstart = event.icalendar_component.get("dtstart")
+
+    ## but, dtstart is not a python datetime - it's a vDatetime from
+    ## the icalendar package.  If you want it as a python datetime,
+    ## use the .dt property.  (In this case dtstart is set - and it's
+    ## pretty much mandatory for events - but the code here is robust
+    ## enough to handle cases where it's undefined):
+    dtstart_dt = dtstart and dtstart.dt
+
+    ## We can modify it:
+    if dtstart:
+        event.icalendar_component["dtstart"].dt = dtstart.dt + timedelta(seconds=3600)
+
     ## And finally, get the casing correct
     event.data = event.data.replace("norwegian", "Norwegian")
 
@@ -153,7 +173,7 @@ def read_modify_event_demo(event):
 
     ## NOTE: always use event.save() for updating events and
     ## calendar.save_event(data) for creating a new event.
-    ## This may not break:
+    ## This may break:
     # event.save(event.data)
     ## ref https://github.com/python-caldav/caldav/issues/153
 
