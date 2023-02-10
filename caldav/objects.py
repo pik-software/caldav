@@ -2735,7 +2735,7 @@ class Todo(CalendarObjectResource):
         please put caldav<2.0 in the requirements.
 
         """
-        if hasattr(due, 'tzinfo') and not due.tzinfo:
+        if hasattr(due, "tzinfo") and not due.tzinfo:
             due = due.astimezone(timezone.utc)
         i = self.icalendar_component
         if check_parent:
@@ -2753,6 +2753,8 @@ class Todo(CalendarObjectResource):
                     else:
                         pend = parent.get_due()
                     if pend and pend.astimezone(timezone.utc) < due:
+                        if check_parent == 'return':
+                            return parent
                         raise error.ConsistencyError(
                             "parent object has due/end %s, cannot procrastinate child object without first procrastinating parent object"
                         )
