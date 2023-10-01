@@ -1908,7 +1908,6 @@ class CalendarObjectResource(DAVObject):
                             raise
         return ret
 
-
     def check_reverse_relations(self, pdb: bool = False) -> list:
         """
         Goes through all relations and verifies that the return relation is set
